@@ -17,8 +17,13 @@ const MOCK_TXS = [
   { hash: "0x44cd...9b18", type: "Unstake", amount: "20.0", time: "26m ago" }
 ];
 
-export default function TokenDetailPage({ params }: { params: { symbol: string } }) {
-  const token = getToken(params.symbol);
+export default async function TokenDetailPage({
+  params
+}: {
+  params: Promise<{ symbol: string }>;
+}) {
+  const { symbol } = await params;
+  const token = getToken(symbol);
   if (!token) return notFound();
 
   const positive = token.change24h >= 0;

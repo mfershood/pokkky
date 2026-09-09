@@ -7,14 +7,19 @@ const nextConfig = {
     remotePatterns: [{ protocol: "https", hostname: "**" }]
   },
   webpack: (config) => {
-    // RainbowKit -> wagmi -> Coinbase's optional "smart wallet" connector pulls in
-    // @coinbase/cdp-sdk, which tries to lazy-import the optional @x402/* payment
-    // packages. We don't use that feature, and those packages aren't installed,
-    // so tell webpack to skip resolving them instead of failing the build.
+    // RainbowKit -> wagmi pulls in several optional connector packages that
+    // are never actually installed because we don't use those features:
+    //   - @x402/*                       (Coinbase's optional payment scheme)
+    //   - @react-native-async-storage/* (only needed inside React Native)
+    //   - pino-pretty                    (optional pretty-printer for the
+    //                                     WalletConnect logger, dev-only)
+    // Tell webpack to skip resolving them instead of erroring/warning.
     config.plugins.push(
+      new webpack.IgnorePlugin({ resourceRegExp: /^@x402\// }),
       new webpack.IgnorePlugin({
-        resourceRegExp: /^@x402\//
-      })
+        resourceRegExp: /^@react-native-async-storage\/async-storage$/
+      }),
+      new webpack.IgnorePlugin({ resourceRegExp: /^pino-pretty$/ })
     );
     return config;
   }
